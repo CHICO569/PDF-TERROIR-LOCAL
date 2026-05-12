@@ -1,0 +1,11 @@
+module pdfservice {
+    typedef sequence<octet> FileData;
+
+    interface Conversion {
+        // Convert a PDF file to a Word (docx) file
+        FileData convertPdfToWord(in FileData pdfFile);
+        
+        // Perform OCR on an image and return a Word (docx) file containing the text
+        FileData performOcr(in FileData imageFile);
+    };
+};
