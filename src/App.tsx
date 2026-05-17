@@ -740,13 +740,13 @@ export default function App() {
           return;
         } catch (error) {
           console.error("MuPDF Protection Error:", error);
-          alert("Erreur de protection : " + (error instanceof Error ? error.message : "Erreur fatale de bibliothèque"));
           setIsProcessing(false);
-          return;
+          throw error;
         }
       }
     } catch (err) {
       console.error("Erreur lors du traitement PDF:", err);
+      throw err;
     }
 
     const url = URL.createObjectURL(selectedFile);
@@ -1166,6 +1166,7 @@ export default function App() {
                           }).catch(err => {
                             console.error("Erreur de signature:", err);
                             setIsUploading(false);
+                            showError("Erreur de signature : " + (err instanceof Error ? err.message : "Erreur inconnue"));
                           });
                         }}
                           disabled={!signature || !signature.content}
@@ -1318,6 +1319,7 @@ export default function App() {
                           }).catch(err => {
                             console.error("Erreur de génération:", err);
                             setIsUploading(false);
+                            showError("Erreur de génération : " + (err instanceof Error ? err.message : "Erreur inconnue"));
                           });
                         }}
                           className={`w-full py-5 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 text-lg bg-brand-red text-white pdf-shadow hover:scale-[1.02]`}
@@ -1488,7 +1490,7 @@ export default function App() {
                         }).catch(err => {
                            console.error("Erreur de protection:", err);
                            setIsUploading(false);
-                           alert("Une erreur est survenue lors de la protection du PDF.");
+                           showError("Erreur de protection : " + (err instanceof Error ? err.message : "Erreur inconnue"));
                         });
                       }}
                       className="w-full py-5 rounded-2xl font-bold flex items-center justify-center gap-3 text-lg transition-all bg-orange-600 text-white pdf-shadow hover:scale-[1.01] active:scale-95"
@@ -1574,6 +1576,7 @@ export default function App() {
                         }).catch(err => {
                            console.error("Erreur de fusion:", err);
                            setIsUploading(false);
+                           showError("Erreur de fusion : " + (err instanceof Error ? err.message : "Erreur inconnue"));
                         });
                       }}
                       disabled={selectedFiles.length < 2}
@@ -1632,6 +1635,7 @@ export default function App() {
                         }).catch(err => {
                            console.error("Erreur de compression:", err);
                            setIsUploading(false);
+                           showError("Erreur de compression : " + (err instanceof Error ? err.message : "Erreur inconnue"));
                         });
                       }}
                       disabled={selectedFiles.length < 2}
@@ -1639,95 +1643,6 @@ export default function App() {
                     >
                       <Scissors className="w-6 h-6" />
                       {selectedFiles.length < 2 ? "Ajoutez au moins 2 fichiers" : "Compresser maintenant"}
-                    </button>
-                  </motion.div>
-                                 ) : showWorkspace && activeTool === "Créer Formulaire" ? (
-                  <motion.div
-                    key="form-workspace"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-[32px] pdf-shadow p-8 flex flex-col border border-zinc-100 min-h-[500px]"
-                  >
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                       <div className="text-left">
-                         <h2 className="text-2xl font-bold mb-1">Créer un formulaire</h2>
-                         <p className="text-zinc-500 text-sm italic">Ajoutez des champs interactifs à remplir sur votre document.</p>
-                       </div>
-                       <div className="flex bg-zinc-100 p-1 rounded-2xl">
-                         <button 
-                           onClick={() => setFieldType('text')}
-                           className={`px-6 py-2.5 rounded-xl font-bold text-xs transition-all ${fieldType === 'text' ? 'bg-white shadow-md text-brand-red' : 'text-zinc-400 hover:text-zinc-600'}`}
-                         >
-                           Champ Texte
-                         </button>
-                         <button 
-                           onClick={() => setFieldType('checkbox')}
-                           className={`px-6 py-2.5 rounded-xl font-bold text-xs transition-all ${fieldType === 'checkbox' ? 'bg-white shadow-md text-brand-red' : 'text-zinc-400 hover:text-zinc-600'}`}
-                         >
-                           Case à cocher
-                         </button>
-                       </div>
-                    </div>
-
-                    <div className="flex-1 bg-zinc-50 rounded-[32px] border border-zinc-100 p-4 mb-8 overflow-y-auto relative min-h-[500px] flex justify-center">
-                       <div 
-                         onClick={(e) => {
-                           const rect = e.currentTarget.getBoundingClientRect();
-                           const x = ((e.clientX - rect.left) / rect.width) * 100;
-                           const y = ((e.clientY - rect.top) / rect.height) * 100;
-                           setFormFields([...formFields, { id: Math.random().toString(), type: fieldType, x, y, label: fieldType === 'text' ? 'Nouveau champ' : '' }]);
-                         }}
-                         className="w-full max-w-xl aspect-[1/1.41] bg-white shadow-2xl rounded-sm p-12 relative cursor-crosshair overflow-hidden group"
-                       >
-                          <div className="absolute inset-0 bg-zinc-50/50 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                             <span className="text-xs font-black text-brand-red/30 tracking-widest uppercase">Cliquez pour ajouter un champ</span>
-                          </div>
-                          {formFields.map(field => (
-                            <div 
-                              key={field.id}
-                              style={{ left: `${field.x}%`, top: `${field.y}%` }}
-                              className="absolute -translate-x-1/2 -translate-y-1/2"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                               <div className="relative group/field">
-                                  {field.type === 'text' ? (
-                                    <div className="w-32 h-6 border-2 border-brand-red/30 bg-brand-red/5 rounded flex items-center px-1 text-[8px] italic text-brand-red">Champ texte...</div>
-                                  ) : (
-                                    <div className="w-4 h-4 border-2 border-brand-red/30 bg-brand-red/5 rounded flex items-center justify-center">
-                                       <div className="w-2 h-2 bg-brand-red rounded-sm" />
-                                    </div>
-                                  )}
-                                  <button 
-                                    onClick={() => setFormFields(prev => prev.filter(f => f.id !== field.id))}
-                                    className="absolute -top-4 -right-4 w-6 h-6 bg-white text-rose-500 rounded-full shadow-lg border border-zinc-100 flex items-center justify-center opacity-0 group-hover/field:opacity-100 transition-opacity hover:bg-rose-50"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
-                               </div>
-                            </div>
-                          ))}
-                       </div>
-                    </div>
-
-                    <button 
-                      onClick={() => {
-                        setIsUploading(true);
-                        setProcessingStep("Génération du formulaire...");
-                        setUploadProgress(50);
-                        
-                        handleDownload().then(() => {
-                           setIsUploading(false); 
-                           setShowWorkspace(false);
-                           setIsSuccess(true); 
-                        }).catch(err => {
-                           console.error("Erreur formulaire:", err);
-                           setIsUploading(false);
-                        });
-                      }}
-                      className="w-full bg-brand-red text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 text-lg pdf-shadow hover:scale-[1.01] transition-all"
-                    >
-                      <Check className="w-6 h-6" />
-                      Générer le PDF remplissable
                     </button>
                   </motion.div>
                 ) : showWorkspace && activeTool === "Rotation PDF" ? (
@@ -1795,6 +1710,7 @@ export default function App() {
                         }).catch(err => {
                            console.error("Erreur de rotation:", err);
                            setIsUploading(false);
+                           showError("Erreur de rotation : " + (err instanceof Error ? err.message : "Erreur inconnue"));
                         });
                       }}
                       className="w-full bg-brand-red text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 text-lg pdf-shadow hover:scale-[1.01] transition-all"
@@ -1861,6 +1777,7 @@ export default function App() {
                         }).catch(err => {
                            console.error("Erreur d'extraction:", err);
                            setIsUploading(false);
+                           showError("Erreur d'extraction : " + (err instanceof Error ? err.message : "Erreur inconnue"));
                         });
                       }}
                       className="w-full bg-brand-red text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 text-lg pdf-shadow hover:scale-[1.01] transition-all"
@@ -1922,6 +1839,7 @@ export default function App() {
                         }).catch(err => {
                            console.error("Erreur de suppression:", err);
                            setIsUploading(false);
+                           showError("Erreur de suppression : " + (err instanceof Error ? err.message : "Erreur inconnue"));
                         });
                       }}
                       className="w-full bg-brand-red text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 text-lg pdf-shadow hover:scale-[1.01] active:scale-95 transition-all"
