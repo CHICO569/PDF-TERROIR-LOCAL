@@ -691,12 +691,13 @@ export default function App() {
           // Configurer l'emplacement du WASM avant l'import pour aider MuPDF
           if (!globalThis.$libmupdf_wasm_Module) {
             globalThis.$libmupdf_wasm_Module = {
-              locateFile: (path: string) => `https://unpkg.com/mupdf@1.27.0/dist/${path}`
+              locateFile: (path: string) => `https://cdn.jsdelivr.net/npm/mupdf@1.27.0/dist/${path}`
             };
           }
 
+          setProcessingStep("Chargement du moteur (la première fois prend ~10s)...");
           // Load MuPDF globally from CDN via ES Module import to bypass Vite bundling issues
-          const mupdf = await import('https://unpkg.com/mupdf@1.27.0/dist/mupdf.js' as any);
+          const mupdf = await import('https://cdn.jsdelivr.net/npm/mupdf@1.27.0/dist/mupdf.js' as any);
           
           if (!mupdf || !mupdf.Document) {
             throw new Error("Bibliothèque de protection non chargée depuis le CDN.");
