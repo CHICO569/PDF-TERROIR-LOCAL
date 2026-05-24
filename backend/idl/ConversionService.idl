@@ -1,5 +1,39 @@
 module pdfservice {
     typedef sequence<octet> FileData;
+    typedef sequence<FileData> FileDataList;
+    typedef sequence<long> PageList;
+
+    struct RotationEntry {
+        long pageNum;
+        long angle;
+    };
+    typedef sequence<RotationEntry> RotationList;
+
+    struct FormField {
+        string fieldId;
+        string fieldType; // "text" or "checkbox"
+        double x;         // percentage x (0-100)
+        double y;         // percentage y (0-100)
+        string label;
+        string val;       // pre-filled or dynamic value
+    };
+    typedef sequence<FormField> FormFieldList;
+
+    struct SignatureData {
+        string type;     // "type" or "draw"
+        string content;  // text or base64 png content
+        double x;        // percentage x (0-100)
+        double y;        // percentage y (0-100)
+        long pageNum;
+    };
+
+    struct ProtectionOptions {
+        string password;
+        boolean noCopy;
+        boolean noPrint;
+        boolean noEdit;
+        boolean noAnnotate;
+    };
 
     interface Conversion {
         // Convert a PDF file to a Word (docx) file
@@ -7,5 +41,32 @@ module pdfservice {
         
         // Perform OCR on an image and return a Word (docx) file containing the text
         FileData performOcr(in FileData imageFile);
+
+        // Merge multiple PDF files into one
+        FileData mergePdfs(in FileDataList pdfFiles);
+
+        // Split/Extract specific pages from a PDF
+        FileData splitPdf(in FileData pdfFile, in PageList pagesToKeep);
+
+        // Delete specific pages from a PDF
+        FileData deletePages(in FileData pdfFile, in PageList pagesToDelete);
+
+        // Rotate specific pages of a PDF
+        FileData rotatePages(in FileData pdfFile, in RotationList rotations);
+
+        // Compress a PDF file
+        FileData compressPdf(in FileData pdfFile);
+
+        // Protect a PDF file with password and permissions
+        FileData protectPdf(in FileData pdfFile, in ProtectionOptions options);
+
+        // Convert an image file (PNG/JPG) to a PDF
+        FileData imageToPdf(in FileData imageFile, in string mimeType);
+
+        // Sign a PDF file at a specific page and position
+        FileData signPdf(in FileData pdfFile, in SignatureData signature);
+
+        // Create interactive form fields on a PDF
+        FileData createForm(in FileData pdfFile, in FormFieldList fields, in long targetPage);
     };
 };

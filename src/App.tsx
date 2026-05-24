@@ -463,7 +463,7 @@ export default function App() {
 
     // Simulate download with correct extension based on tool
   const handleDownload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile && selectedFiles.length === 0) return;
     
     let extension = '.pdf';
     let suffix = 'processed';
@@ -483,281 +483,133 @@ export default function App() {
       suffix = 'scanned';
     }
 
-    const fileName = selectedFile.name.split('.')[0] + `_${suffix}${extension}`;
+    const baseName = selectedFile ? selectedFile.name.split('.')[0] : 'merged';
+    const fileName = baseName + `_${suffix}${extension}`;
     
-    // Real PDF processing for specific tools
-    try {
-      if (activeTool === "Signer PDF" && signature && selectedFile) {
-        const fileArrayBuffer = await selectedFile.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(fileArrayBuffer);
-        const pages = pdfDoc.getPages();
-        const pageIdx = Math.min(targetPage - 1, pages.length - 1);
-        const page = pages[pageIdx];
-        const { width, height } = page.getSize();
-        const sigWidth = 150;
-        const sigHeight = 60;
-        const x = (signaturePos.x / 100) * width - (sigWidth / 2);
-        const y = (1 - (signaturePos.y / 100)) * height - (sigHeight / 2);
+    let endpoint = "";
+    const formData = new FormData();
 
-        if (signature.type === 'type') {
-          const helvetica = await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique);
-          page.drawText(signature.content, {
-            x: Math.max(0, x),
-            y: Math.max(0, y),
-            size: 30,
-            font: helvetica,
-            color: rgb(0.8, 0, 0),
-          });
-        } else if (signature.type === 'draw') {
-          const pngImage = await pdfDoc.embedPng(signature.content);
-          page.drawImage(pngImage, {
-            x: Math.max(0, x),
-            y: Math.max(0, y),
-            width: sigWidth,
-            height: sigHeight,
-          });
-        }
-        const pdfBytes = await pdfDoc.save();
-        downloadBlob(pdfBytes, fileName);
-        return;
-      }
-
-      if (activeTool === "Supprimer pages" && selectedFile) {
-        const pdfBytes = await selectedFile.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(pdfBytes);
-        const delPdf = await PDFDocument.create();
-        const indices = pdfDoc.getPageIndices().filter(i => !deletedPages.includes(i + 1));
-        const copiedPages = await delPdf.copyPages(pdfDoc, indices);
-        copiedPages.forEach(p => delPdf.addPage(p));
-        const finalPdfBytes = await delPdf.save();
-        downloadBlob(finalPdfBytes, fileName);
-        return;
-      }
-
-      if (activeTool === "Fusionner PDF" && selectedFiles.length > 0) {
-        const mergedPdf = await PDFDocument.create();
-        for (const file of selectedFiles) {
-          const pdfBytes = await file.arrayBuffer();
-          const pdfDoc = await PDFDocument.load(pdfBytes);
-          const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-          copiedPages.forEach((page) => mergedPdf.addPage(page));
-        }
-        const pdfBytes = await mergedPdf.save();
-        downloadBlob(pdfBytes, fileName);
-        return;
-      }
-
-      if (activeTool === "Rotation PDF" && selectedFile && Object.keys(pageRotations).length > 0) {
-        const pdfBytes = await selectedFile.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(pdfBytes);
-        const pages = pdfDoc.getPages();
-        Object.entries(pageRotations).forEach(([pageIdxStr, rot]) => {
-          const idx = parseInt(pageIdxStr) - 1;
-          if (pages[idx]) {
-            const currentRotation = pages[idx].getRotation().angle;
-            pages[idx].setRotation(degrees((currentRotation + (rot as number)) % 360));
-          }
-        });
-        const finalPdfBytes = await pdfDoc.save();
-        downloadBlob(finalPdfBytes, fileName);
-        return;
-      }
-
-      if (activeTool === "Éditer PDF" && selectedFile) {
-        const pdfBytes = await selectedFile.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(pdfBytes);
-        // Basic "edit" just re-saves for now
-        const finalPdfBytes = await pdfDoc.save();
-        downloadBlob(finalPdfBytes, fileName);
-        return;
-      }
-
-      if (activeTool === "Créer Formulaire" && selectedFile) {
-        const pdfBytes = await selectedFile.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(pdfBytes);
-        const form = pdfDoc.getForm();
-        const pages = pdfDoc.getPages();
-        const page = pages[targetPage - 1] || pages[0];
-        const { width, height } = page.getSize();
-
-        for (let idx = 0; idx < formFields.length; idx++) {
-          const field = formFields[idx];
-          const x = (field.x / 100) * width;
-          const y = (field.y / 100) * height;
-
-          if (field.type === 'text') {
-            const textField = form.createTextField(`field_${idx}`);
-            const fieldValue = (field as any).value || '';
-            textField.setText(fieldValue);
-            // x and y from UI are the center of the element.
-            // PDF fields are positioned from bottom-left corner.
-            textField.addToPage(page, { x: x - 50, y: height - y - 8, width: 100, height: 16 });
-          } else if (field.type === 'checkbox') {
-            const checkBox = form.createCheckBox(`check_${idx}`);
-            if ((field as any).value === 'checked') {
-              checkBox.check();
-            }
-            checkBox.addToPage(page, { x: x - 7.5, y: height - y - 7.5, width: 15, height: 15 });
-          } else if (field.type === 'signature') {
-            const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique);
-            const signatureText = (field as any).value || '';
-            page.drawText(signatureText, {
-              x: x - 40,
-              y: height - y - 6,
-              size: 18,
-              font: helveticaBold,
-              color: rgb(0.8, 0, 0),
-            });
-          }
-        }
-
-        const finalPdfBytes = await pdfDoc.save();
-        downloadBlob(finalPdfBytes, fileName);
-        return;
-      }
-
-      if (activeTool === "Diviser PDF" && selectedFile && splitRange) {
-        const pdfBytes = await selectedFile.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(pdfBytes);
-        const splitPdf = await PDFDocument.create();
-        
-        // Parse range: e.g. "1-3, 5"
-        const pagesToKeep: number[] = [];
-        const parts = splitRange.split(',').map(p => p.trim());
+    // Map tools to their corresponding backend routes
+    if (activeTool === "Signer PDF") {
+      if (!selectedFile || !signature) return;
+      endpoint = "http://localhost:3001/api/pdf/sign";
+      formData.append("file", selectedFile);
+      formData.append("signatureType", signature.type);
+      formData.append("signatureContent", signature.content);
+      formData.append("x", String(signaturePos.x));
+      formData.append("y", String(signaturePos.y));
+      formData.append("pageNum", String(targetPage));
+    }
+    else if (activeTool === "Supprimer pages") {
+      if (!selectedFile) return;
+      endpoint = "http://localhost:3001/api/pdf/delete-pages";
+      formData.append("file", selectedFile);
+      formData.append("pagesToDelete", deletedPages.join(','));
+    }
+    else if (activeTool === "Fusionner PDF") {
+      if (selectedFiles.length === 0) return;
+      endpoint = "http://localhost:3001/api/pdf/merge";
+      selectedFiles.forEach(file => formData.append("files", file));
+    }
+    else if (activeTool === "Rotation PDF") {
+      if (!selectedFile) return;
+      endpoint = "http://localhost:3001/api/pdf/rotate";
+      formData.append("file", selectedFile);
+      formData.append("rotations", JSON.stringify(pageRotations));
+    }
+    else if (activeTool === "Créer Formulaire") {
+      if (!selectedFile) return;
+      endpoint = "http://localhost:3001/api/pdf/create-form";
+      formData.append("file", selectedFile);
+      formData.append("fields", JSON.stringify(formFields));
+      formData.append("targetPage", String(targetPage));
+    }
+    else if (activeTool === "Diviser PDF") {
+      if (!selectedFile) return;
+      endpoint = "http://localhost:3001/api/pdf/split";
+      formData.append("file", selectedFile);
+      
+      const parseSplitRange = (rangeStr: string): number[] => {
+        const pages: number[] = [];
+        const parts = rangeStr.split(',').map(p => p.trim());
         parts.forEach(part => {
           if (part.includes('-')) {
             const [start, end] = part.split('-').map(Number);
             if (!isNaN(start) && !isNaN(end)) {
-              for (let i = start; i <= end; i++) pagesToKeep.push(i - 1);
+              for (let i = start; i <= end; i++) pages.push(i - 1);
             }
           } else {
             const num = Number(part);
-            if (!isNaN(num)) pagesToKeep.push(num - 1);
+            if (!isNaN(num)) pages.push(num - 1);
           }
         });
-
-        // Unique and valid indices
-        const validIndices = Array.from(new Set(pagesToKeep))
-          .filter(idx => idx >= 0 && idx < pdfDoc.getPageCount())
-          .sort((a, b) => a - b);
-
-        if (validIndices.length > 0) {
-          const copiedPages = await splitPdf.copyPages(pdfDoc, validIndices);
-          copiedPages.forEach(p => splitPdf.addPage(p));
-          const finalPdfBytes = await splitPdf.save();
-          downloadBlob(finalPdfBytes, fileName);
-          return;
-        }
-      }
-
-      if (activeTool === "Compresser PDF" && selectedFiles.length > 0) {
-        const mergedPdf = await PDFDocument.create();
-        for (const file of selectedFiles) {
-          const pdfBytes = await file.arrayBuffer();
-          const pdfDoc = await PDFDocument.load(pdfBytes);
-          const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-          copiedPages.forEach((page) => mergedPdf.addPage(page));
-        }
-        // Advanced compression simulation using object streams
-        const finalPdfBytes = await mergedPdf.save({ useObjectStreams: true });
-        downloadBlob(finalPdfBytes, fileName);
-        return;
-      }
-
-      if (activeTool === "Image vers PDF" && selectedFile) {
-        if (selectedFile.type.startsWith('image/')) {
-          const pdfDoc = await PDFDocument.create();
-          const imgBytes = await selectedFile.arrayBuffer();
-          let img;
-          if (selectedFile.type === 'image/png') {
-            img = await pdfDoc.embedPng(imgBytes);
-          } else {
-            img = await pdfDoc.embedJpg(imgBytes);
-          }
-          const page = pdfDoc.addPage([img.width, img.height]);
-          page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
-          const finalPdfBytes = await pdfDoc.save();
-          downloadBlob(finalPdfBytes, fileName);
-          return;
-        }
-      }
-
-      if (activeTool === "Protéger PDF" && selectedFile) {
-        setIsProcessing(true);
-        setProcessingStep("Sécurisation du PDF...");
-        try {
-          const inputBytes = new Uint8Array(await selectedFile.arrayBuffer());
-          
-          // Configurer l'emplacement du WASM avant l'import pour aider MuPDF
-          if (!globalThis.$libmupdf_wasm_Module) {
-            globalThis.$libmupdf_wasm_Module = {
-              locateFile: (path: string) => `https://cdn.jsdelivr.net/npm/mupdf@1.27.0/dist/${path}`
-            };
-          }
-
-          setProcessingStep("Chargement du moteur (la première fois prend ~10s)...");
-          // Load MuPDF globally from CDN via ES Module import to bypass Vite bundling issues
-          const mupdf = await import('https://cdn.jsdelivr.net/npm/mupdf@1.27.0/dist/mupdf.js' as any);
-          
-          if (!mupdf || !mupdf.Document) {
-            throw new Error("Bibliothèque de protection non chargée depuis le CDN.");
-          }
-
-          console.log("Opening document for protection...");
-          const mupdfDoc = mupdf.Document.openDocument(inputBytes, "application/pdf");
-          const pdfDoc = mupdfDoc.asPDF();
-          
-          if (!pdfDoc) {
-            throw new Error("Impossible de traiter ce fichier comme un PDF.");
-          }
-
-          // PDF standard permissions bitmask
-          // Bits are 1-indexed in PDF spec: 
-          // 3: Print (4), 4: Modify (8), 5: Copy (16), 6: Annotate (32)
-          let perms = 0xFFFFFFFC; // Par défaut : Tout autorisé
-          if (restrictions.noPrint) perms &= ~4;
-          if (restrictions.noEdit) perms &= ~8;
-          if (restrictions.noCopy) perms &= ~16;
-          if (restrictions.noAnnotate) perms &= ~32;
-          
-          const options = {
-            "encrypt": "aes-256",
-            "user-password": pdfPassword || "",
-            "owner-password": pdfPassword || "owner-" + Math.random().toString(36).substring(7),
-            "permissions": perms.toString()
-          };
-
-          console.log("Protecting PDF...", options);
-          const buffer = pdfDoc.saveToBuffer(options);
-          const outputBytes = buffer.asUint8Array();
-          
-          if (!outputBytes || outputBytes.length < 100) {
-            throw new Error("Erreur lors de la génération du fichier protégé.");
-          }
-
-          downloadBlob(outputBytes, fileName);
-          setPdfProtected(true);
-          setIsProcessing(false);
-          return;
-        } catch (error) {
-          console.error("MuPDF Protection Error:", error);
-          setIsProcessing(false);
-          throw error;
-        }
-      }
-    } catch (err) {
-      console.error("Erreur lors du traitement PDF:", err);
-      throw err;
+        return Array.from(new Set(pages)).sort((a, b) => a - b);
+      };
+      
+      formData.append("pagesToKeep", parseSplitRange(splitRange).join(','));
+    }
+    else if (activeTool === "Compresser PDF") {
+      if (selectedFiles.length === 0) return;
+      endpoint = "http://localhost:3001/api/pdf/compress";
+      selectedFiles.forEach(file => formData.append("files", file));
+    }
+    else if (activeTool === "Image vers PDF") {
+      if (!selectedFile) return;
+      endpoint = "http://localhost:3001/api/pdf/image-to-pdf";
+      formData.append("file", selectedFile);
+      formData.append("mimeType", selectedFile.type);
+    }
+    else if (activeTool === "Protéger PDF") {
+      if (!selectedFile) return;
+      endpoint = "http://localhost:3001/api/pdf/protect";
+      formData.append("file", selectedFile);
+      formData.append("password", pdfPassword);
+      formData.append("noCopy", String(restrictions.noCopy));
+      formData.append("noPrint", String(restrictions.noPrint));
+      formData.append("noEdit", String(restrictions.noEdit));
+      formData.append("noAnnotate", String(restrictions.noAnnotate));
+    }
+    else {
+      // Fallback
+      if (!selectedFile) return;
+      const url = URL.createObjectURL(selectedFile);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      return;
     }
 
-    const url = URL.createObjectURL(selectedFile);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      setIsProcessing(true);
+      const response = await fetch(endpoint, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur de traitement sur le serveur");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setIsProcessing(false);
+    } catch (err) {
+      setIsProcessing(false);
+      console.error("Erreur lors du traitement PDF:", err);
+      showError("Le serveur backend n'est pas disponible ou une erreur s'est produite.");
+      throw err;
+    }
   };
 
   const downloadBlob = (bytes: Uint8Array, name: string) => {
