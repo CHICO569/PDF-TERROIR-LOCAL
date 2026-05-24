@@ -176,17 +176,26 @@ class ConversionImpl(pdfservice__POA.Conversion):
             
             for page in reader.pages:
                 writer.add_page(page)
-                
+            
+            # Use provided password or generate a random one for owner
+            user_password = options.password if options.password else "".join(random.choices(string.ascii_letters + string.digits, k=8))
             owner_pass = "".join(random.choices(string.ascii_letters + string.digits, k=12))
             
-            # Bits: 3 (print: 4), 4 (modify: 8), 5 (copy: 16), 6 (annotate: 32)
-            perms = 0xFFFFFFFC
-            if options.noPrint: perms &= ~4
-            if options.noEdit: perms &= ~8
-            if options.noCopy: perms &= ~16
-            if options.noAnnotate: perms &= ~32
+            # Calculate permission flags (PDF standard bits)
+            # Start with all permissions enabled
+            perms = -1
             
-            writer.encrypt(user_password=options.password, owner_password=owner_pass, permissions_flag=perms)
+            # If specific restrictions are requested, calculate flags
+            if options.noPrint or options.noEdit or options.noCopy or options.noAnnotate:
+                perms = 0
+                if not options.noPrint: perms |= 0x4          # Bit 2: Print
+                if not options.noEdit: perms |= 0x8           # Bit 3: Modify
+                if not options.noCopy: perms |= 0x10          # Bit 4: Copy
+                if not options.noAnnotate: perms |= 0x20      # Bit 5: Annotate
+                perms |= 0xFFFFFF00                           # Keep all other bits
+            
+            print(f"Encrypting PDF with user_password={'*' * len(user_password)}, permissions=0x{perms:x}", flush=True)
+            writer.encrypt(user_password=user_password, owner_password=owner_pass, permissions_flag=perms)
             
             out = io.BytesIO()
             writer.write(out)
@@ -194,6 +203,8 @@ class ConversionImpl(pdfservice__POA.Conversion):
             return out.getvalue()
         except Exception as e:
             print(f"Error during Protect: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
             return b""
 
     def imageToPdf(self, imageFile, mimeType):
@@ -279,6 +290,7 @@ class ConversionImpl(pdfservice__POA.Conversion):
         try:
             import pypdf
             from reportlab.pdfgen import canvas
+            from reportlab.lib.colors import black, red
             
             reader = pypdf.PdfReader(io.BytesIO(pdfFile))
             writer = pypdf.PdfWriter()
@@ -299,28 +311,18 @@ class ConversionImpl(pdfservice__POA.Conversion):
                         x_pt = (field.x / 100.0) * width
                         y_pt = (1.0 - (field.y / 100.0)) * height
                         
-                        name = f"field_{idx}"
+                        # Draw form field boxes
                         if field.fieldType == "text":
-                            can.acroForm.textField(
-                                name=name,
-                                tooltip=field.label,
-                                x=x_pt - 50.0,
-                                y=y_pt - 8.0,
-                                width=100.0,
-                                height=16.0,
-                                value=field.val
-                            )
+                            # Draw a text field rectangle
+                            can.rect(x_pt - 50.0, y_pt - 8.0, 100.0, 16.0)
+                            can.setFont("Helvetica", 10)
+                            can.drawString(x_pt - 40.0, y_pt - 2.0, field.val[:20] if field.val else field.label)
                         elif field.fieldType == "checkbox":
-                            checked = (field.val == "checked")
-                            can.acroForm.checkBox(
-                                name=name,
-                                tooltip=field.label,
-                                x=x_pt - 7.5,
-                                y=y_pt - 7.5,
-                                width=15.0,
-                                height=15.0,
-                                checked=checked
-                            )
+                            # Draw a checkbox
+                            can.rect(x_pt - 7.5, y_pt - 7.5, 15.0, 15.0)
+                            if field.val == "checked":
+                                can.setFont("Helvetica", 12)
+                                can.drawString(x_pt - 4.0, y_pt - 3.0, "X")
                             
                     can.save()
                     packet.seek(0)
@@ -336,6 +338,8 @@ class ConversionImpl(pdfservice__POA.Conversion):
             return out.getvalue()
         except Exception as e:
             print(f"Error during Create Form: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
             return b""
 
 def main():

@@ -268,11 +268,14 @@ def protect_pdf():
     no_edit = request.form.get('noEdit') == 'true'
     no_annotate = request.form.get('noAnnotate') == 'true'
     
+    print(f"Protection request: password={'*' * len(password) if password else '[empty]'}, noCopy={no_copy}, noPrint={no_print}, noEdit={no_edit}, noAnnotate={no_annotate}", flush=True)
+    
     service = get_conversion_service()
     if not service:
         return jsonify({"error": "CORBA backend not available"}), 503
         
     try:
+        # Create CORBA struct with protection options
         options = pdfservice.ProtectionOptions(
             password=password,
             noCopy=no_copy,
@@ -281,6 +284,7 @@ def protect_pdf():
             noAnnotate=no_annotate
         )
         pdf_bytes = file.read()
+        print(f"Calling protectPdf with {len(pdf_bytes)} bytes", flush=True)
         protected_bytes = service.protectPdf(pdf_bytes, options)
         if not protected_bytes:
             return jsonify({"error": "Protection failed on backend"}), 500
@@ -295,6 +299,9 @@ def protect_pdf():
             download_name=download_name
         )
     except Exception as e:
+        print(f"Error in protect_pdf: {str(e)}", flush=True)
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/pdf/image-to-pdf', methods=['POST'])

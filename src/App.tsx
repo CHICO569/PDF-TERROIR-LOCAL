@@ -603,6 +603,13 @@ export default function App() {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      
+      // Mark success for protection and other operations
+      if (activeTool === "Protéger PDF") {
+        setPdfProtected(true);
+        setTimeout(() => setPdfProtected(false), 3000);
+      }
+      
       setIsProcessing(false);
     } catch (err) {
       setIsProcessing(false);
