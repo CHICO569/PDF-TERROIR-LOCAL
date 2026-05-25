@@ -559,6 +559,24 @@ export default function App() {
       formData.append("file", selectedFile);
       formData.append("mimeType", selectedFile.type);
     }
+    else if (activeTool === "Filigrane") {
+      if (!selectedFile) return;
+      endpoint = "http://localhost:3001/api/pdf/watermark";
+      formData.append("file", selectedFile);
+      // Defaults — can be exposed in UI later
+      formData.append("text", "PDF Manager Pro");
+      formData.append("opacity", String(0.15));
+      formData.append("angle", String(45));
+      formData.append("fontSize", String(60));
+      formData.append("x", String(50));
+      formData.append("y", String(50));
+      formData.append("allPages", String(true));
+    }
+    else if (["Éditer PDF", "PDF vers JPG", "PDF vers PNG", "PDF vers Excel", "PDF vers PPTX", "Word vers PDF"].includes(activeTool || "")) {
+      // Feature not yet implemented — inform the user instead of silently downloading original
+      showError("Cette fonctionnalité n'est pas encore disponible. Bientôt disponible.");
+      return;
+    }
     else if (activeTool === "Protéger PDF") {
       if (!selectedFile) return;
       endpoint = "http://localhost:3001/api/pdf/protect";

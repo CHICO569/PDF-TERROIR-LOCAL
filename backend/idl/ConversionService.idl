@@ -35,6 +35,16 @@ module pdfservice {
         boolean noAnnotate;
     };
 
+    struct WatermarkData {
+        string text;     // Watermark text
+        double opacity;  // 0.0 to 1.0
+        double angle;    // rotation angle in degrees
+        double fontSize; // font size
+        double x;        // percentage x (0-100)
+        double y;        // percentage y (0-100)
+        boolean allPages; // apply to all pages or just first
+    };
+
     interface Conversion {
         // Convert a PDF file to a Word (docx) file
         FileData convertPdfToWord(in FileData pdfFile);

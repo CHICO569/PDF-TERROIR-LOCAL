@@ -285,6 +285,74 @@ class ConversionImpl(pdfservice__POA.Conversion):
             print(f"Error during Sign: {e}", flush=True)
             return b""
 
+    def watermarkPdf(self, pdfFile, watermark):
+        print(f"Received Watermark PDF request. text={watermark.text}", flush=True)
+        try:
+            import pypdf
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.colors import black
+
+            reader = pypdf.PdfReader(io.BytesIO(pdfFile))
+            writer = pypdf.PdfWriter()
+
+            for i, page in enumerate(reader.pages):
+                width = float(page.mediabox.width)
+                height = float(page.mediabox.height)
+
+                packet = io.BytesIO()
+                can = canvas.Canvas(packet, pagesize=(width, height))
+
+                # watermark properties
+                text = watermark.text if watermark.text else ""
+                opacity = float(watermark.opacity) if hasattr(watermark, 'opacity') else 0.15
+                angle = float(watermark.angle) if hasattr(watermark, 'angle') else 45.0
+                fontSize = float(watermark.fontSize) if hasattr(watermark, 'fontSize') else 60
+                x_pct = float(watermark.x) if hasattr(watermark, 'x') else 50
+                y_pct = float(watermark.y) if hasattr(watermark, 'y') else 50
+                all_pages = bool(watermark.allPages) if hasattr(watermark, 'allPages') else True
+
+                # If not all pages and this is not the first page, just merge original
+                if (not all_pages) and (i != 0):
+                    writer.add_page(page)
+                    continue
+
+                # Calculate position
+                x_pt = (x_pct / 100.0) * width
+                y_pt = (1.0 - (y_pct / 100.0)) * height
+
+                can.saveState()
+                can.translate(x_pt, y_pt)
+                can.rotate(angle)
+                can.setFillColorRGB(0.6, 0.6, 0.6)
+                try:
+                    can.setFont("Helvetica", fontSize)
+                except Exception:
+                    pass
+                # ReportLab doesn't support alpha directly here; emulate with gray color
+                can.drawString(-fontSize * (len(text) / 4), 0, text)
+                can.restoreState()
+                can.save()
+                packet.seek(0)
+
+                wm_reader = pypdf.PdfReader(packet)
+                try:
+                    page.merge_page(wm_reader.pages[0])
+                except Exception:
+                    # fallback: add original page without merging
+                    pass
+
+                writer.add_page(page)
+
+            out = io.BytesIO()
+            writer.write(out)
+            print("Watermark successful.", flush=True)
+            return out.getvalue()
+        except Exception as e:
+            print(f"Error during Watermark: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
+            return b""
+
     def createForm(self, pdfFile, fields, targetPage):
         print(f"Received Create Form request with {len(fields)} fields on page {targetPage}.", flush=True)
         try:

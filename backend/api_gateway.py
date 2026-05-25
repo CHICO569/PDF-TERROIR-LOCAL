@@ -100,6 +100,63 @@ def merge_pdfs():
         merged_bytes = service.mergePdfs(pdf_bytes_list)
         if not merged_bytes:
             return jsonify({"error": "Merge failed on backend"}), 500
+        return send_file(
+            io.BytesIO(merged_bytes),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='merged.pdf'
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/pdf/watermark', methods=['POST'])
+def watermark_pdf():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    text = request.form.get('text', '')
+    opacity = float(request.form.get('opacity', 0.15))
+    angle = float(request.form.get('angle', 45))
+    fontSize = float(request.form.get('fontSize', 60))
+    x = float(request.form.get('x', 50))
+    y = float(request.form.get('y', 50))
+    allPages = request.form.get('allPages', 'true').lower() == 'true'
+
+    pdf_bytes = file.read()
+
+    service = get_conversion_service()
+    if not service:
+        return jsonify({"error": "CORBA backend not available"}), 503
+
+    try:
+        # Build WatermarkData struct compatible with IDL
+        watermark = pdfservice.WatermarkData()
+        watermark.text = text
+        watermark.opacity = opacity
+        watermark.angle = angle
+        watermark.fontSize = fontSize
+        watermark.x = x
+        watermark.y = y
+        watermark.allPages = allPages
+
+        wm_bytes = service.watermarkPdf(pdf_bytes, watermark)
+        if not wm_bytes:
+            return jsonify({"error": "Watermark failed on backend"}), 500
+
+        return send_file(
+            io.BytesIO(wm_bytes),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f"{os.path.splitext(file.filename)[0]}_watermarked.pdf"
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        if not merged_bytes:
+            return jsonify({"error": "Merge failed on backend"}), 500
             
         return send_file(
             io.BytesIO(merged_bytes),
