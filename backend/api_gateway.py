@@ -10,7 +10,7 @@ import pdfservice
 app = Flask(__name__)
 CORS(app)
 
-# Initialize ORB and get reference to ConversionService
+# Initialize ORB and get reference to PdfManager
 orb = CORBA.ORB_init(sys.argv, CORBA.ORB_ID)
 
 def get_conversion_service():
@@ -18,7 +18,7 @@ def get_conversion_service():
         obj = orb.resolve_initial_references("NameService")
         import CosNaming
         rootContext = obj._narrow(CosNaming.NamingContext)
-        name = [CosNaming.NameComponent("ConversionService", "")]
+        name = [CosNaming.NameComponent("PdfManager", "")]
         obj = rootContext.resolve(name)
         return obj._narrow(pdfservice.Conversion)
     except Exception as e:

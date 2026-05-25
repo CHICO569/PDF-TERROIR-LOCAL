@@ -360,9 +360,9 @@ def main():
         import CosNaming
         rootContext = obj._narrow(CosNaming.NamingContext)
         
-        name = [CosNaming.NameComponent("ConversionService", "")]
+        name = [CosNaming.NameComponent("PdfManager", "")]
         rootContext.rebind(name, servant._this())
-        print("Successfully bound to NameService.", flush=True)
+        print("Successfully bound to NameService as PdfManager.", flush=True)
     except Exception as e:
         print(f"Failed to bind to NameService: {e}", flush=True)
         sys.exit(1)

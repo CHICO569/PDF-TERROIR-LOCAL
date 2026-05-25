@@ -5,3 +5,30 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Generated CORBA stubs (rebuild from IDL as needed)
+ConversionService_idl.py
+pdfservice/
+pdfservice__POA/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test/scratch
+TRAVAUX AD TP 2026/
