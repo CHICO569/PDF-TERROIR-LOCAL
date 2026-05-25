@@ -21,6 +21,7 @@ except ImportError as e:
     print(f"Looking for stubs in: {parent_dir}", file=sys.stderr)
     print(f"Python path: {sys.path}", file=sys.stderr)
     raise
+import ConversionService_idl
 
 # ** 2. Sub-modules
 

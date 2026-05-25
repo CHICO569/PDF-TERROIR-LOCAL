@@ -8,7 +8,7 @@ async function createTestPdf() {
     const { height } = page.getSize();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    page.drawText('Test PDF File for PDFAid', {
+    page.drawText('Test PDF File for PDF Manager Pro', {
         x: 50,
         y: height - 100,
         size: 30,
