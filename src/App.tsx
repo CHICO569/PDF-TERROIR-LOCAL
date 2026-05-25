@@ -724,7 +724,7 @@ export default function App() {
           <div className="bg-brand-red p-1.5 rounded-lg flex items-center justify-center">
             <FileText className="w-5 h-5 text-white" />
           </div>
-          <span className="font-extrabold text-2xl tracking-tighter">Terroir Local PDF</span>
+          <span className="font-extrabold text-2xl tracking-tighter">PDF Manager Pro</span>
         </div>
         <button 
           onClick={() => setIsSidebarOpen(true)}
@@ -1952,7 +1952,7 @@ export default function App() {
         {/* Value Proposition */}
         <section className="px-6 py-24 bg-brand-gray-light">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-center tracking-tight">Pourquoi Terroir Local PDF est différent</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-center tracking-tight">Pourquoi PDF Manager Pro est différent</h2>
             <div className="space-y-6 mt-16">
               <ValueCard 
                 icon={<Settings className="w-7 h-7 text-white" />} 
@@ -1981,11 +1981,11 @@ export default function App() {
           </div>
           <div className="space-y-4">
             <Accordion 
-              question="Qu'est-ce que Terroir Local PDF ?" 
-              answer="Terroir Local PDF est une suite d'outils en ligne gratuite et sécurisée conçue pour simplifier la gestion de vos documents PDF : édition, conversion, signature et plus encore."
+              question="Qu'est-ce que PDF Manager Pro ?" 
+              answer="PDF Manager Pro est une suite d'outils en ligne gratuite et sécurisée conçue pour simplifier la gestion de vos documents PDF : édition, conversion, signature et plus encore."
             />
             <Accordion 
-              question="Terroir Local PDF est-il sûr et sécurisé ?" 
+              question="PDF Manager Pro est-il sûr et sécurisé ?" 
               answer="Absolument. La sécurité est notre priorité. Vos fichiers sont chiffrés et automatiquement supprimés de nos serveurs après traitement."
             />
             <Accordion 
@@ -2001,7 +2001,7 @@ export default function App() {
                <div className="bg-brand-red p-2 rounded-xl">
                  <FileText className="w-6 h-6 text-white" />
                </div>
-               <span className="font-bold text-2xl tracking-tighter">Terroir Local PDF</span>
+               <span className="font-bold text-2xl tracking-tighter">PDF Manager Pro</span>
              </div>
 
              <div className="flex flex-wrap justify-center gap-12">
@@ -2020,7 +2020,7 @@ export default function App() {
              </div>
 
              <div className="text-zinc-400 text-sm font-medium">
-               &copy; 2026 Terroir Local PDF. Tous droits réservés. Propulsé par l'innovation locale.
+               &copy; 2026 PDF Manager Pro. Tous droits réservés. Propulsé par l'innovation locale.
              </div>
            </div>
         </footer>
