@@ -89,6 +89,16 @@ export default function App() {
 
   const tabs = ["Éditer PDF", "Convertir depuis PDF", "Convertir en PDF", "Remplir et Signer"];
   
+  const unsupportedTools = [
+    "Éditer PDF",
+    "Rogner PDF",
+    "PDF vers JPG",
+    "PDF vers PNG",
+    "PDF vers Excel",
+    "PDF vers PPTX",
+    "Word vers PDF",
+  ];
+
   const allTools = [
     { icon: <MousePointer2 className="text-blue-500" />, title: "Éditer PDF", category: "Éditer PDF" },
     { icon: <Lock className="text-orange-500" />, title: "Protéger PDF", category: "Éditer PDF" },
@@ -572,7 +582,7 @@ export default function App() {
       formData.append("y", String(50));
       formData.append("allPages", String(true));
     }
-    else if (["Éditer PDF", "PDF vers JPG", "PDF vers PNG", "PDF vers Excel", "PDF vers PPTX", "Word vers PDF"].includes(activeTool || "")) {
+    else if (unsupportedTools.includes(activeTool || "")) {
       // Feature not yet implemented — inform the user instead of silently downloading original
       showError("Cette fonctionnalité n'est pas encore disponible. Bientôt disponible.");
       return;

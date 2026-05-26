@@ -157,15 +157,6 @@ def watermark_pdf():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-        return send_file(
-            io.BytesIO(merged_bytes),
-            mimetype='application/pdf',
-            as_attachment=True,
-            download_name='merged.pdf'
-        )
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 @app.route('/api/pdf/split', methods=['POST'])
 def split_pdf():
     if 'file' not in request.files:

@@ -66,16 +66,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onToolSelect 
                     <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Convertir depuis PDF</h4>
                     <ul className="space-y-2 text-sm text-zinc-600">
                       <li onClick={() => handleLinkClick("PDF vers Word")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">PDF vers Word</li>
-                      <li onClick={() => handleLinkClick("PDF vers PPTX")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">PDF vers PPTX</li>
-                      <li onClick={() => handleLinkClick("PDF vers Excel")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">PDF vers Excel</li>
-                      <li onClick={() => handleLinkClick("PDF vers JPG")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">PDF vers JPG</li>
-                      <li onClick={() => handleLinkClick("PDF vers PNG")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">PDF vers PNG</li>
+                      <li onClick={() => handleLinkClick("PDF vers PPTX")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">PDF vers PPTX <span className="text-[10px] text-zinc-400">(à venir)</span></li>
+                      <li onClick={() => handleLinkClick("PDF vers Excel")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">PDF vers Excel <span className="text-[10px] text-zinc-400">(à venir)</span></li>
+                      <li onClick={() => handleLinkClick("PDF vers JPG")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">PDF vers JPG <span className="text-[10px] text-zinc-400">(à venir)</span></li>
+                      <li onClick={() => handleLinkClick("PDF vers PNG")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">PDF vers PNG <span className="text-[10px] text-zinc-400">(à venir)</span></li>
                     </ul>
                   </div>
                   <div>
                     <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Convertir en PDF</h4>
                     <ul className="space-y-2 text-sm text-zinc-600">
-                      <li onClick={() => handleLinkClick("Word vers PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Word vers PDF</li>
+                      <li onClick={() => handleLinkClick("Word vers PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Word vers PDF <span className="text-[10px] text-zinc-400">(à venir)</span></li>
                       <li onClick={() => handleLinkClick("Image vers PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Image vers PDF</li>
                       <li className="hover:text-brand-red cursor-pointer font-bold mt-2">Voir tout</li>
                     </ul>
@@ -90,12 +90,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onToolSelect 
                 onToggle={() => toggleCategory('editor')}
               >
                 <ul className="pl-6 pt-2 space-y-3 text-sm text-zinc-600">
-                  <li onClick={() => handleLinkClick("Éditer PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Éditer PDF</li>
+                  <li onClick={() => handleLinkClick("Éditer PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Éditer PDF <span className="text-[10px] text-zinc-400">(à venir)</span></li>
                   <li onClick={() => handleLinkClick("Signer PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Signer PDF</li>
                   <li onClick={() => handleLinkClick("Rotation PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Rotation PDF</li>
                   <li onClick={() => handleLinkClick("Fusionner PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Fusionner PDF</li>
                   <li onClick={() => handleLinkClick("Diviser PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Diviser PDF</li>
-                  <li onClick={() => handleLinkClick("Rogner PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Rogner PDF</li>
+                  <li onClick={() => handleLinkClick("Rogner PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Rogner PDF <span className="text-[10px] text-zinc-400">(à venir)</span></li>
                   <li onClick={() => handleLinkClick("Filigrane")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Filigrane</li>
                   <li onClick={() => handleLinkClick("Compresser PDF")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Compresser PDF</li>
                   <li onClick={() => handleLinkClick("Supprimer pages")} className="hover:text-brand-red cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-zinc-50">Supprimer pages</li>
