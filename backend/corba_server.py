@@ -156,8 +156,8 @@ class ConversionImpl(pdfservice__POA.Conversion):
             writer = pypdf.PdfWriter()
             
             for page in reader.pages:
-                page.compress_content_streams()
                 writer.add_page(page)
+                writer.pages[-1].compress_content_streams()
                 
             out = io.BytesIO()
             writer.write(out)
