@@ -142,6 +142,45 @@ export default function App() {
   const [splitRange, setSplitRange] = useState("1");
   const [formFields, setFormFields] = useState<{ id: string; type: 'text' | 'checkbox'; x: number; y: number; label: string }[]>([]);
   const [fieldType, setFieldType] = useState<'text' | 'checkbox'>('text');
+  const [pageImages, setPageImages] = useState<string[]>([]);
+
+  // Load PDF pages as images using PDF.js when a file is selected
+  useEffect(() => {
+    if (!selectedFile || selectedFile.type !== 'application/pdf') {
+      setPageImages([]);
+      return;
+    }
+    let cancelled = false;
+    const renderPages = async () => {
+      try {
+        const arrayBuffer = await selectedFile.arrayBuffer();
+        const pdfjs = (window as any).pdfjsLib;
+        if (!pdfjs) {
+          console.error('PDF.js non chargé');
+          return;
+        }
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+        const imgs: string[] = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 1.5 });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d')!;
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          imgs.push(canvas.toDataURL('image/png'));
+        }
+        if (!cancelled) {
+          setPageImages(imgs);
+        }
+      } catch (err) {
+        console.error('Erreur de rendu PDF.js:', err);
+      }
+    };
+    renderPages();
+    return () => { cancelled = true; };
+  }, [selectedFile]);
 
   const loadTemplate = async (templateName: string) => {
     setActiveTool("Créer Formulaire");
@@ -330,6 +369,8 @@ export default function App() {
     }
 
     if (!files || files.length === 0) return;
+
+    setIsSuccess(false);
 
     const currentFile = files[0];
     
@@ -867,14 +908,20 @@ export default function App() {
                           <div 
                             key={pageIdx}
                             ref={pageIdx === targetPage ? documentRef : null}
-                            className="w-full max-w-lg aspect-[1/1.41] bg-white shadow-2xl rounded-sm p-12 flex flex-col gap-4 relative origin-top shrink-0"
+                            className="w-full max-w-lg bg-white shadow-2xl rounded-sm relative origin-top shrink-0 overflow-hidden"
                           >
-                             <div className="absolute top-4 left-4 text-[10px] font-black text-zinc-200 uppercase tracking-widest">Page {pageIdx}</div>
-                             <div className="h-4 w-3/4 bg-zinc-50 rounded" />
-                             <div className="h-4 w-full bg-zinc-50 rounded" />
-                             <div className="h-4 w-5/6 bg-zinc-100 rounded" />
-                             <div className="h-4 w-full bg-zinc-50 rounded" />
-                             <div className="h-4 w-1/3 bg-zinc-100 rounded mb-12" />
+                             {pageImages[pageIdx - 1] ? (
+                               <img src={pageImages[pageIdx - 1]} alt={`Page ${pageIdx}`} className="w-full h-auto block" />
+                             ) : (
+                               <div className="aspect-[1/1.41] p-12 flex flex-col gap-4">
+                                 <div className="absolute top-4 left-4 text-[10px] font-black text-zinc-200 uppercase tracking-widest">Page {pageIdx}</div>
+                                 <div className="h-4 w-3/4 bg-zinc-50 rounded animate-pulse" />
+                                 <div className="h-4 w-full bg-zinc-50 rounded animate-pulse" />
+                                 <div className="h-4 w-5/6 bg-zinc-100 rounded animate-pulse" />
+                                 <div className="h-4 w-full bg-zinc-50 rounded animate-pulse" />
+                                 <div className="h-4 w-1/3 bg-zinc-100 rounded mb-12 animate-pulse" />
+                               </div>
+                             )}
                              
                              {pageIdx === targetPage && (
                                <div className="mt-auto h-40 w-full border-2 border-dashed border-brand-red/10 rounded-2xl flex items-center justify-center text-zinc-300 italic text-sm relative group">

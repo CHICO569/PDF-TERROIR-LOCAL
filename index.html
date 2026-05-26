@@ -15,6 +15,14 @@
     <meta property="og:description" content="Modifiez, fusionnez et sécurisez vos PDF facilement dans votre navigateur." />
     <meta property="og:type" content="website" />
     
+    <!-- PDF.js CDN for rendering PDF pages -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+      }
+    </script>
   </head>
   <body>
     <!-- Contenu visible par les crawlers/bots si JS est désactivé -->
