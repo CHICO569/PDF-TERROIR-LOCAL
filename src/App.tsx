@@ -801,6 +801,7 @@ export default function App() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     onDragOver={preventDefaults}
                     onDragEnter={preventDefaults}
+                    onDragLeave={preventDefaults}
                     onDrop={handleFileSelect}
                     className="border-4 border-dashed border-zinc-200 rounded-[32px] p-16 bg-white pdf-shadow cursor-pointer hover:border-brand-red/30 transition-all relative group overflow-hidden"
                     onClick={() => fileInputRef.current?.click()}
@@ -809,6 +810,7 @@ export default function App() {
                       type="file" 
                       ref={fileInputRef} 
                       className="hidden" 
+                      multiple={activeTool === "Fusionner PDF" || activeTool === "Compresser PDF"}
                       accept={
                         activeTool === "Scanner texte" ? "image/*, .pdf, .doc, .docx" :
                         activeTool?.includes('Image vers PDF') ? "image/*" :
