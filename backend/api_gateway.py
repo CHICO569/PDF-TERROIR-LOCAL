@@ -134,14 +134,15 @@ def watermark_pdf():
 
     try:
         # Build WatermarkData struct compatible with IDL
-        watermark = pdfservice.WatermarkData()
-        watermark.text = text
-        watermark.opacity = opacity
-        watermark.angle = angle
-        watermark.fontSize = fontSize
-        watermark.x = x
-        watermark.y = y
-        watermark.allPages = allPages
+        watermark = pdfservice.WatermarkData(
+            text,
+            opacity,
+            angle,
+            fontSize,
+            x,
+            y,
+            allPages,
+        )
 
         wm_bytes = service.watermarkPdf(pdf_bytes, watermark)
         if not wm_bytes:
@@ -155,9 +156,7 @@ def watermark_pdf():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-        if not merged_bytes:
-            return jsonify({"error": "Merge failed on backend"}), 500
-            
+
         return send_file(
             io.BytesIO(merged_bytes),
             mimetype='application/pdf',

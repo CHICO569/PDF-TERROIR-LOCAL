@@ -76,6 +76,9 @@ module pdfservice {
         // Sign a PDF file at a specific page and position
         FileData signPdf(in FileData pdfFile, in SignatureData signature);
 
+        // Apply a watermark to a PDF
+        FileData watermarkPdf(in FileData pdfFile, in WatermarkData watermark);
+
         // Create interactive form fields on a PDF
         FileData createForm(in FileData pdfFile, in FormFieldList fields, in long targetPage);
     };

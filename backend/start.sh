@@ -7,6 +7,9 @@ omniidl -bpython -I/app/idl -C/app /app/idl/ConversionService.idl
 echo "Generated stubs:"
 ls -la /app/*.py | grep -i conversion || echo "No conversion files found"
 
+# Clean previous NameService data files that can block restart
+rm -f /tmp/omninames-* /tmp/omninames-*.bak
+
 # Start NameService in the background on port 2809
 echo "Starting omniNames on port 2809..."
 omniNames -start 2809 -logdir /tmp &
